@@ -5,7 +5,6 @@
     <ion-card>
       <ion-card-content>
         <ion-item>
-          <ion-icon name="create-outline" slot="start"></ion-icon>
           <ion-input
             id="quiz-title"
             label="Quiz Title"
@@ -31,7 +30,6 @@
     <ion-card>
       <ion-card-content>
         <ion-item>
-          <ion-icon name="document-text-outline" slot="start"></ion-icon>
           <ion-input
             id="quiz-description"
             label="Quiz Description"
@@ -55,7 +53,6 @@
         <ion-card-content>
 
           <ion-item>
-            <ion-icon name="help-circle-outline" slot="start"></ion-icon>
             <ion-input
               id="question-{{$index}}"
               label="Question"
@@ -95,7 +92,6 @@
         fill="outline"
         (click)="addQuestion()"
         type="button">
-        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
         Add Question
       </ion-button>
 
@@ -103,7 +99,6 @@
         expand="block"
         color="success"
         type="submit">
-        <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
         Submit Quiz
       </ion-button>
     </div>
