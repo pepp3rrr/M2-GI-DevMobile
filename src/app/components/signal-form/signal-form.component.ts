@@ -10,7 +10,6 @@ import {
   IonItem,
   IonInput,
   IonButton,
-  IonIcon,
   IonText,
   IonCheckbox
 } from '@ionic/angular/standalone';
@@ -40,7 +39,6 @@ import {
     IonItem,
     IonInput,
     IonButton,
-    IonIcon,
     IonText,
     IonCheckbox,
     
