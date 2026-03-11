@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Quiz } from 'src/app/models/quiz';
 import { QuizService } from 'src/app/services/quizService';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonFab, IonFabButton, IonIcon } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonFab, IonFabButton, IonIcon, ModalController } from '@ionic/angular/standalone';
 import { QuizCardComponent } from '../quiz-card/quiz-card.component';
 import { CreateQuizModal } from '../modals/create-quiz.modal';
 import { add } from 'ionicons/icons';
@@ -26,11 +26,11 @@ import { addIcons } from 'ionicons';
 ],
 })
 export class HomePageComponent  implements OnInit {
-  
+  private modalCtrl = inject(ModalController);
   quizzes: Quiz[] = [];
   private itemsPerLine = 4;
   private lines: Array<number> = [];
-  constructor(private quizService: QuizService) { 
+  constructor(private quizService: QuizService) {
     addIcons({ add });
   }
   
@@ -40,7 +40,19 @@ export class HomePageComponent  implements OnInit {
     });
   }
 
-  createQuiz() {
-    console.log("Create quiz clicked");
+  async createQuiz() {
+
+    const modal = await this.modalCtrl.create({
+      component: CreateQuizModal
+    });
+
+    await modal.present();
+
+    const result = await modal.onDidDismiss();
+
+    if(result.data) {
+      console.log("Created quiz:", result.data);
+    }
+
   }
 }
