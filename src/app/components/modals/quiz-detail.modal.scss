@@ -1,0 +1,25 @@
+.quiz-description {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.question-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.choice {
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice.correct {
+  background: rgba(46, 204, 113, 0.15);
+  font-weight: 500;
+}
