@@ -7,7 +7,6 @@
         <ion-item>
           <ion-input
             id="quiz-title"
-            label="Quiz Title"
             placeholder="Enter quiz title"
             [formField]="quizForm.title">
           </ion-input>
@@ -31,7 +30,6 @@
         <ion-item>
           <ion-input
             id="quiz-description"
-            label="Quiz Description"
             placeholder="Enter quiz description"
             [formField]="quizForm.description">
           </ion-input>
@@ -41,19 +39,27 @@
 
     <!-- Questions -->
     @for(question of quizForm.questions; track $index) {
+      @let questionIndex = $index;
       <ion-card>
         <ion-card-header>
           <ion-card-title>
             Question {{ $index + 1 }}
           </ion-card-title>
+          
+              <ion-button
+                fill="clear"
+                color="success"
+                size="small"
+                (click)="addOption($index)">
+                add option
+              </ion-button>
+
         </ion-card-header>
 
         <ion-card-content>
-
           <ion-item>
             <ion-input
               id="question-{{$index}}"
-              label="Question"
               placeholder="Enter question text"
               [formField]="question.text">
             </ion-input>
@@ -63,20 +69,25 @@
             <p class="options-title">Options</p>
           </ion-text>
 
-          @for(option of question.options; track option.id()) {
+          @for(option of question.choices; track option.id()) {
             <ion-item lines="full">
               <ion-input
                 placeholder="Option text"
                 [formField]="option.text">
               </ion-input>
 
-              <ion-checkbox
-                slot="end"
-                [formField]="option.isCorrect">
-              </ion-checkbox>
+              <!--
+              <ion-button
+                fill="clear"
+                color="danger"
+                size="small"
+                (click)="removeOption(questionIndex, option.id().value())">
+                delete
+              </ion-button>
+              -->
+
             </ion-item>
           }
-
         </ion-card-content>
       </ion-card>
     }
