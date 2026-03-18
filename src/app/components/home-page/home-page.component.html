@@ -19,7 +19,10 @@
         @for(quiz of quizzes; track quiz.id) 
         {
           <ion-col size="auto">
-            <app-quiz-card [quiz]="quiz"></app-quiz-card>
+            <app-quiz-card 
+              [quiz]="quiz"
+              (quizClick)="openQuiz($event)">
+            </app-quiz-card>
           </ion-col>
         }
       </ion-row>
@@ -31,4 +34,6 @@
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+  
 </ion-content>
