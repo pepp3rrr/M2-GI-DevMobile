@@ -6,6 +6,7 @@ import { QuizCardComponent } from '../quiz-card/quiz-card.component';
 import { CreateQuizModal } from '../modals/create-quiz.modal';
 import { add } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { JoinRoomComponent } from '../modals/join-room/join-room.component';
 
 @Component({
   selector: 'app-home-page',
@@ -54,5 +55,13 @@ export class HomePageComponent  implements OnInit {
       console.log("Created quiz:", result.data);
     }
 
+  }
+
+  async openJoinModal() {
+    const modal = await this.modalCtrl.create({
+      component: JoinRoomComponent
+    });
+    
+    await modal.present();
   }
 }
