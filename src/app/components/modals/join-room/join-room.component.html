@@ -19,7 +19,9 @@
     <ion-input [(ngModel)]="roomId"></ion-input>
   </ion-item>
 
-  <p style="color:red" *ngIf="error">{{ error }}</p>
+  @if(error) {
+    <p style="color:red">{{ error }}</p>
+  }
 
   <ion-button expand="block" (click)="join()">
     Rejoindre

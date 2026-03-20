@@ -7,6 +7,7 @@ import { CreateQuizModal } from '../modals/create-quiz.modal';
 import { add } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { JoinRoomComponent } from '../modals/join-room/join-room.component';
+import { CreateRoomComponent } from '../modals/create-room/create-room.component';
 
 @Component({
   selector: 'app-home-page',
@@ -63,6 +64,16 @@ export class HomePageComponent  implements OnInit {
       component: JoinRoomComponent
     });
     
+    await modal.present();
+  }
+  async openCreateRoomModal() {
+    const modal = await this.modalCtrl.create({
+      component: CreateRoomComponent,
+      componentProps: {
+        quizzes: this.quizzes
+      }
+    });
+
     await modal.present();
   }
 }
