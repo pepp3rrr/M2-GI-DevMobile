@@ -1,48 +1,140 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Create Quiz</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="quiz-content ion-padding">
 
-<ion-content class="ion-padding">
+  <div class="quiz-container">
 
-  <!-- Quiz title -->
-  <ion-item>
-    <ion-input
-      label="Quiz title"
-      placeholder="Enter title"
-      [(ngModel)]="title">
-    </ion-input>
-  </ion-item>
+    <!-- Header -->
+    <div class="quiz-header">
+      <div class="logo">🧠</div>
+      <h1 class="app-name">Create Quiz</h1>
+    </div>
 
-  <ion-list>
+    <!-- Title -->
+    <ion-item>
+      <ion-icon name="create-outline" slot="start"></ion-icon>
+      <ion-input
+        placeholder="Quiz title"
+        [value]="quiz().title"
+        (ionInput)="setTitle($event.detail.value ?? '')"
+      ></ion-input>
+    </ion-item>
 
-    @for(question of questions; track $index) {
-      <ion-item>
-        {{ question }}
-      </ion-item>
-    }
+    <!-- Description -->
+    <ion-item>
+      <ion-icon name="document-text-outline" slot="start"></ion-icon>
+      <ion-input
+        placeholder="Description"
+        [value]="quiz().description"
+        (ionInput)="setDescription($event.detail.value ?? '')"
+      ></ion-input>
+    </ion-item>
 
-  </ion-list>
+    <!-- Questions -->
+    <div class="questions">
 
-  <!-- Add question -->
-  <ion-item>
-    <ion-input
-      placeholder="New question"
-      [(ngModel)]="newQuestion">
-    </ion-input>
+      @for (question of quiz().questions; track question.id) {
 
-    <ion-button (click)="addQuestion()">
-      Add
+        <ion-card class="question-card">
+
+          <ion-card-header>
+            <ion-card-title>
+              <ion-input
+                placeholder="Your question..."
+                [value]="question.text"
+                (ionInput)="setQuestionText(question.id, $event.detail.value ?? '')"
+              ></ion-input>
+            </ion-card-title>
+
+            <ion-button
+              fill="clear"
+              color="danger"
+              (click)="removeQuestion(question.id)"
+            >
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-card-header>
+
+          <ion-card-content>
+
+            <ion-radio-group
+              [value]="question.correctChoiceId"
+              (ionChange)="setCorrectChoice(question.id, $event.detail.value)"
+            >
+
+              @for (choice of question.choices; track choice.id) {
+
+                <ion-item class="choice-item">
+
+                  <ion-input
+                    placeholder="Answer"
+                    [value]="choice.text"
+                    (ionInput)="setChoiceText(question.id, choice.id, $event.detail.value ?? '')"
+                  ></ion-input>
+
+                  <ion-radio
+                    slot="end"
+                    [value]="choice.id"
+                  ></ion-radio>
+
+                  <ion-button
+                    fill="clear"
+                    color="medium"
+                    [disabled]="question.choices.length <= 2"
+                    (click)="removeChoice(question.id, choice.id)"
+                  >
+                    <ion-icon name="close-outline"></ion-icon>
+                  </ion-button>
+
+                </ion-item>
+
+              }
+
+            </ion-radio-group>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="add-choice-btn"
+              (click)="addChoice(question.id)"
+              [disabled]="question.choices.length >= 4"
+            >
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Add answer
+            </ion-button>
+
+            @if (!isQuestionValid(question)) {
+              <p class="error-text">
+                Complete the question properly
+              </p>
+            }
+
+          </ion-card-content>
+
+        </ion-card>
+
+      }
+
+    </div>
+
+    <!-- Add question -->
+    <ion-button expand="block" class="add-question-btn" (click)="addQuestion()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Add Question
     </ion-button>
-  </ion-item>
 
-  <ion-button expand="block" (click)="createQuiz()">
-    Create Quiz
-  </ion-button>
+    <!-- Create -->
+    <ion-button
+      expand="block"
+      class="create-btn"
+      (click)="createQuiz()"
+      [disabled]="!isQuizValid()"
+    >
+      🚀 Create Quiz
+    </ion-button>
 
-  <ion-button expand="block" fill="clear" (click)="cancel()">
-    Cancel
-  </ion-button>
+    <ion-button expand="block" fill="clear" (click)="cancel()">
+      Cancel
+    </ion-button>
+
+  </div>
 
 </ion-content>

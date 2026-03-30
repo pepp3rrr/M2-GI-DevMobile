@@ -1,49 +1,64 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Home</ion-title>
+<ion-header>
+  <ion-toolbar class="home-toolbar">
+    <ion-title>Kahoot!</ion-title>
 
     <ion-buttons slot="end">
       <ion-button (click)="logout()">
         <ion-icon name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-
   </ion-toolbar>
 </ion-header>
 
-  <ion-content [fullscreen]="true">
-    <ion-header collapse="condense">
-      <ion-toolbar>
-        <ion-title size="large">Blank</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    
-    <div id="container">
-      <ion-grid>
-        <ion-row>
-          @for(quiz of quizzes; track quiz.id) 
-          {
-            <ion-col size="auto">
-              <app-quiz-card 
-                [quiz]="quiz"
-                (quizClick)="openQuiz($event)">
-              </app-quiz-card>
-            </ion-col>
-          }
-        </ion-row>
-      </ion-grid>
+<ion-content class="home-content">
+
+  <!-- Header section -->
+  <div class="home-header">
+    <h1 class="app-name">Choose a quiz or create your own!</h1>
+  </div>
+
+  <!-- Quiz list -->
+  <div class="quiz-grid">
+    <ion-grid>
+      <ion-row>
+        @for(quiz of quizzes; track quiz.id) {
+          <ion-col size="6" size-md="4" size-lg="3">
+            <app-quiz-card 
+              [quiz]="quiz"
+              (quizClick)="openQuiz($event)">
+            </app-quiz-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- FAB (Create Quiz) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="fab-create" (click)="createQuiz()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>
+
+<!-- 🔥 Bottom Navigation -->
+<ion-footer>
+  <ion-toolbar class="bottom-nav">
+
+    <div class="nav-container">
+
+      <div class="nav-item" (click)="openJoinRoomModal()">
+        <ion-icon name="enter-outline"></ion-icon>
+        <span>Join</span>
+      </div>
+
+      <div class="nav-item" (click)="openCreateRoomModal()">
+        <ion-icon name="play-outline"></ion-icon>
+        <span>Host</span>
+      </div>
+
     </div>
 
-    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button (click)="createQuiz()">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
-
-    <ion-button expand="block" (click)="openJoinRoomModal()">
-      Rejoindre une room
-    </ion-button>
-    <ion-button expand="block" (click)="openCreateRoomModal()">
-      Créer une room
-    </ion-button>
-  </ion-content>
+  </ion-toolbar>
+</ion-footer>

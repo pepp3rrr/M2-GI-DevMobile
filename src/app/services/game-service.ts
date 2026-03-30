@@ -3,7 +3,7 @@ import { Firestore, doc, collection, setDoc, updateDoc, getDoc, getDocs, docData
 import { Observable, firstValueFrom, map, tap } from 'rxjs';
 import { Quiz } from '../models/quiz';
 import { Room } from '../models/room';
-import { QuizService } from './quizService';
+import { QuizService } from './quiz-service';
 import { GameQuestion } from '../models/gameQuestion';
 import { Player } from '../models/player';
 import { GameResult } from '../models/gameResult';

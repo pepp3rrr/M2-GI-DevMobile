@@ -1,8 +1,16 @@
-<ion-card (click)="onClick()" button="true">
+<ion-card
+  class="quiz-card"
+  (click)="onClick()"
+  button="true"
+  [style.border-left]="'4px solid ' + getSoftColor(quiz.id)"
+>
+
   <ion-card-header>
     <ion-card-title>{{ quiz.title }}</ion-card-title>
   </ion-card-header>
+
   <ion-card-content>
     {{ quiz.description }}
   </ion-card-content>
+
 </ion-card>

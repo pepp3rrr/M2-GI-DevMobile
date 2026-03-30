@@ -10,7 +10,8 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
-  getDoc
+  getDoc,
+  setDoc
 } from '@angular/fire/firestore';
 
 @Injectable({
@@ -117,5 +118,32 @@ export class QuizService {
         questions: questionRefs
       }).then(() => updatedQuiz)
     );
+  }
+
+  async saveQuiz(quiz: Quiz): Promise<void> {
+    const quizRef = doc(this.firestore, 'quizzes', quiz.id);
+    const questionsCollection = collection(this.firestore, 'questions');
+
+    // 1. Save all questions (set = create/update)
+    const questionRefs = await Promise.all(
+      quiz.questions.map(async (q) => {
+        const questionRef = doc(questionsCollection, q.id);
+
+        await setDoc(questionRef, {
+          text: q.text,
+          choices: q.choices,
+          correctChoiceId: q.correctChoiceId
+        });
+
+        return questionRef;
+      })
+    );
+
+    // 2. Save quiz (set = create/update)
+    await setDoc(quizRef, {
+      title: quiz.title,
+      description: quiz.description,
+      questions: questionRefs
+    });
   }
 }

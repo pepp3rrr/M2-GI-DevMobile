@@ -1,0 +1,30 @@
+.quiz-card {
+  border-radius: 16px;
+  padding: 4px;
+
+  --background: #ffffff;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover / press */
+.quiz-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Title */
+ion-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+/* Description */
+ion-card-content {
+  font-size: 0.85rem;
+  color: #636e72;
+}

@@ -1,0 +1,82 @@
+.home-content {
+  --background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+}
+
+/* Header */
+.home-header {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.app-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: black;
+}
+
+/* Grid */
+.quiz-grid {
+  padding: 0 10px 80px; }
+
+/* Toolbar */
+.home-toolbar {
+  --background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  --color: white;
+  --border-width: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Force header icon color */
+.home-toolbar ion-icon,
+.home-toolbar ion-button {
+  color: white !important;
+}
+
+/* FAB */
+.fab-create {
+  --background: #00cec9;
+  --box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  --background: white;
+  --color: black;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
+}
+
+/* Nav layout */
+.nav-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+/* Nav items */
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+  color: black; 
+}
+
+/* Icons */
+.nav-item ion-icon {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+  color: black; 
+}
+
+/* Interaction */
+.nav-item:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
