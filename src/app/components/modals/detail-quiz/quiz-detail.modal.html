@@ -1,51 +1,180 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>{{ quiz.title }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="close()">Close</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="quiz-content ion-padding">
 
-<ion-content class="ion-padding">
+  <div class="quiz-container">
 
-  <p class="quiz-description">{{ quiz.description }}</p>
+    <!-- Header -->
+    <div class="quiz-header">
+      <div class="header-row">
+        <h1 class="app-name">
+          {{ isEditing() ? 'Edit Quiz' : 'Quiz Details' }}
+        </h1>
 
-  <ion-list lines="none">
+        @if (!isEditing()) {
+          <ion-button fill="clear" color="light" (click)="enableEdit()">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
+        }
+      </div>
+    </div>
 
-    @for (q of questions; track q.id; let i = $index) {
-      <ion-card class="question-card">
+    <!-- Title -->
+    <ion-item>
+      <ion-icon name="reader-outline" slot="start"></ion-icon>
+      <ion-input
+        placeholder="Quiz title"
+        [value]="editableQuiz()?.title"
+        [readonly]="!isEditing()"
+        (ionInput)="isEditing() && setTitle($event.detail.value ?? '')"
+      ></ion-input>
+    </ion-item>
 
-        <ion-card-header>
-          <ion-card-title>
-            Question {{ i + 1 }}
-          </ion-card-title>
-          <ion-card-subtitle>
-            {{ q.text }}
-          </ion-card-subtitle>
-        </ion-card-header>
+    <!-- Description -->
+    <ion-item>
+      <ion-icon name="document-text-outline" slot="start"></ion-icon>
+      <ion-input
+        placeholder="Description"
+        [value]="editableQuiz()?.description"
+        [readonly]="!isEditing()"
+        (ionInput)="isEditing() && setDescription($event.detail.value ?? '')"
+      ></ion-input>
+    </ion-item>
 
-        <ion-card-content>
+    <!-- Questions -->
+    <div class="questions">
 
-          @for (choice of q.choices; track choice.id) {
-            <div 
-              class="choice"
-              [class.correct]="choice.id === q.correctChoiceId"
+      @for (question of editableQuiz()?.questions || []; track question.id) {
+
+        <ion-card class="question-card">
+
+          <ion-card-header>
+
+            <ion-card-title>
+              <ion-input
+                placeholder="Your question..."
+                [value]="question.text"
+                [readonly]="!isEditing()"
+                (ionInput)="isEditing() && setQuestionText(question.id, $event.detail.value ?? '')"
+              ></ion-input>
+            </ion-card-title>
+
+            @if (isEditing()) {
+              <ion-button
+                fill="clear"
+                color="danger"
+                (click)="removeQuestion(question.id)"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            }
+
+          </ion-card-header>
+
+          <ion-card-content>
+
+            <ion-radio-group
+              [value]="question.correctChoiceId"
+              (ionChange)="isEditing() && setCorrectChoice(question.id, $event.detail.value)"
             >
-              <ion-icon 
-                *ngIf="choice.id === q.correctChoiceId" 
-                name="checkmark-circle"
-              ></ion-icon>
 
-              {{ choice.text }}
-            </div>
-          }
+              @for (choice of question.choices; track choice.id) {
 
-        </ion-card-content>
+                <ion-item class="choice-item">
+                  <ion-input
+                    placeholder="Answer"
+                    [value]="choice.text"
+                    [readonly]="!isEditing()"
+                    (ionInput)="isEditing() && setChoiceText(question.id, choice.id, $event.detail.value ?? '')"
+                  ></ion-input>
 
-      </ion-card>
+                  @if (!isEditing()) {
+                    <ion-icon
+                      [name]="question.correctChoiceId === choice.id ? 'checkmark-circle' : 'ellipse-outline'"
+                      [color]="question.correctChoiceId === choice.id ? 'success' : 'medium'"
+                      slot="end"
+                    ></ion-icon>
+                  }
+
+                  @if (isEditing()) {
+                    <ion-radio slot="end" [value]="choice.id"></ion-radio>
+
+                    <ion-button
+                      fill="clear"
+                      color="medium"
+                      [disabled]="question.choices.length <= 2"
+                      (click)="removeChoice(question.id, choice.id)"
+                    >
+                      <ion-icon name="close-outline"></ion-icon>
+                    </ion-button>
+                  }
+
+                </ion-item>
+              }
+
+            </ion-radio-group>
+
+            @if (isEditing()) {
+              <ion-button
+                expand="block"
+                fill="outline"
+                class="add-choice-btn"
+                (click)="addChoice(question.id)"
+                [disabled]="question.choices.length >= 4"
+              >
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add answer
+              </ion-button>
+
+              @if (isEditing() && !isQuestionValid(question)) {
+                <p class="error-text">
+                  Complete the question properly
+                </p>
+              }
+            }
+
+          </ion-card-content>
+
+        </ion-card>
+
+      }
+
+    </div>
+
+    <!-- Add question -->
+    @if (isEditing()) {
+      <ion-button
+        expand="block"
+        class="add-question-btn"
+        (click)="addQuestion()"
+      >
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Add Question
+      </ion-button>
     }
 
-  </ion-list>
+    <!-- Bottom -->
+    @if (isEditing()) {
+
+      <ion-button
+        expand="block"
+        class="create-btn"
+        (click)="save()"
+        [disabled]="!isQuizValid()"
+      >
+        💾 Save Quiz
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="cancelEdit()">
+        Cancel
+      </ion-button>
+
+    } @else {
+
+      <ion-button expand="block" fill="clear" (click)="close()">
+        Close
+      </ion-button>
+
+    }
+
+  </div>
 
 </ion-content>

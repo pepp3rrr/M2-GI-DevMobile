@@ -1,25 +1,110 @@
-.quiz-description {
-  margin-bottom: 16px;
-  font-size: 14px;
-  color: var(--ion-color-medium);
+/* Background */
+.quiz-content {
+  --background: linear-gradient(135deg, #6c5ce7, #a29bfe);
 }
 
-.question-card {
-  margin-bottom: 16px;
-  border-radius: 12px;
+/* Layout */
+.quiz-container {
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.choice {
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 8px;
-  background: var(--ion-color-light);
+/* Header */
+.quiz-header {
+  margin-bottom: 20px;
+}
+
+.header-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
 }
 
-.choice.correct {
-  background: rgba(46, 204, 113, 0.15);
-  font-weight: 500;
+.logo {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.app-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* Inputs */
+ion-item {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  --background: #f5f5f5;
+}
+
+/* Cards */
+.question-card {
+  border-radius: 16px;
+  margin-top: 15px;
+  --background: white;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.15s ease;
+}
+
+.question-card:active {
+  transform: scale(0.98);
+}
+
+/* Title */
+ion-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+/* Choices */
+.choice-item {
+  --background: #fafafa;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+/* Buttons */
+ion-button {
+  margin-top: 8px;
+}
+
+.add-choice-btn {
+  margin-top: 10px;
+}
+
+.add-question-btn {
+  margin-top: 20px;
+  --background: #00cec9;
+  font-weight: 600;
+}
+
+.create-btn {
+  margin-top: 15px;
+  height: 48px;
+  font-weight: 700;
+  --background: #6c5ce7;
+}
+
+/* Readonly feel (subtle but nice) */
+ion-input[readonly] {
+  opacity: 0.9;
+}
+
+ion-input[readonly]::part(native) {
+  cursor: default;
+}
+
+/* Spacing */
+.questions {
+  margin-top: 10px;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 8px;
 }
