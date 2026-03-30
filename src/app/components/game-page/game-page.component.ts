@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Room } from '../../models/room';
 import { GameService } from '../../services/game-service';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonFab, IonFabButton, IonIcon, ModalController } from '@ionic/angular/standalone';
+import { IonButton, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonFab, IonFabButton, IonIcon, ModalController } from '@ionic/angular/standalone';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { GameQuestion } from 'src/app/models/gameQuestion';
+import { user, Auth } from '@angular/fire/auth';
+import { GameResult } from 'src/app/models/gameResult';
+import { Player } from 'src/app/models/player';
 
 @Component({
   selector: 'app-game-room',
@@ -14,14 +17,14 @@ import { GameQuestion } from 'src/app/models/gameQuestion';
   imports: [
     IonContent,
     AsyncPipe,
-    NgClass
+    NgClass,
+    IonButton
   ]
 })
 export class GameRoomPage implements OnInit {
 
   roomId!: string;
-  username!: string;
-  lastEventTimestamp: number = 0;
+  userId!: string;
 
   game_status: string = 'waiting';
   question: GameQuestion = {
@@ -31,33 +34,40 @@ export class GameRoomPage implements OnInit {
   };
   selectedAnswerId: string | null = null;
   correctAnswerId: string | null = null;
+  globalScores: GameResult[] = [];
 
   room$!: Observable<Room | null>;
+  players$!: Observable<Player[]>;
 
   constructor(
     private route: ActivatedRoute,
-    private gameService: GameService
+    private gameService: GameService,
+    private auth: Auth
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.roomId = this.route.snapshot.paramMap.get('id')!;
-    this.username = this.route.snapshot.queryParamMap.get('username')!;
+
+    const currentUser = await firstValueFrom(user(this.auth));
+    if (!currentUser) { 
+      throw new Error('User not authenticated');
+    }
+    this.userId = currentUser.uid;
 
     this.room$ = this.gameService.watchRoom(this.roomId);
+    this.players$ = this.gameService.watchPlayers(this.roomId);
 
     // écoute des changements
     this.room$.subscribe(room => {
       console.dir(room, {depth: null});
       if (!room) return;
 
-      if(room.currentEvent.eventTimestamp === this.lastEventTimestamp) return; // pas de nouvel événement
-      this.lastEventTimestamp = room.currentEvent.eventTimestamp;
+      if(room.status === this.game_status) return; // pas de nouvel événement
+      this.game_status = room.status;
 
-      console.log('New event received:', room.currentEvent);
+      console.log('New event received:', room);
 
-      this.game_status = room.currentEvent.data.type;
-
-      switch(room.currentEvent.data.type) {
+      switch(room.status) {
         case 'waiting':
           break;
         case 'question_send':
@@ -77,31 +87,42 @@ export class GameRoomPage implements OnInit {
           .catch(error => {
             console.error('Error fetching correct answer ID:', error);
           });
+          this.gameService.getResponseCounts(this.roomId).then(gameQuestion => {
+            if (gameQuestion) {
+              this.question = gameQuestion;
+            }
+          }).catch(error => {
+            console.error('Error fetching response counts:', error);
+          });
           break;
         case 'show_score':
-          // TODO : faire en sorte que le MJ envoit l'event  
-          // TODO : afficher les scores
-          break;
-        case 'closed':
-          // TODO : faire en sorte que le MJ envoit l'event  
-          // TODO : afficher un message de fin de partie
+          this.gameService.getGlobalScores(this.roomId).then(globalScores => {
+            this.globalScores = (globalScores || []).sort((a, b) => b.score - a.score);
+          }).catch(error => {
+            console.error('Error fetching global scores:', error);
+          });
           break;
         default:
-          console.log('Unknown event type:', room.currentEvent.data.type);
+          console.log('Unknown event type:', room.status);
           break;
       }
     });
   }
   selectAnswer(choiceId: string) {
+    console.log('Answer selected:', choiceId, "Current game status:", this.game_status);
     if (this.game_status !== 'question_send') return;
 
     this.selectedAnswerId = choiceId;
-
+    
     this.gameService.submitAnswer(
       this.roomId,
-      this.username,
+      this.userId,
       choiceId,
       this.question!.index
     );
+  }
+
+  exitGame() {
+    window.location.href = '/';
   }
 }

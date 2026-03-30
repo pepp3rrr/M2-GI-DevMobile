@@ -5,39 +5,65 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-
+  
   @if(game_status === 'waiting') {
-    <h2>En attente des joueurs...</h2>
-    <h3>RoomId : {{ roomId }}</h3>
-    <ion-button (click)="startGame()">Start 1ère question</ion-button>
-    <ul>
-      @for(player of (room$ | async)?.players; track player.username) {
-        <li>{{ player.username }}</li>
-      }
-    </ul>
+    <div class="waiting-room">
+      <h2>En attente des joueurs...</h2>
+      <p>{{ (players$ | async)?.length || "0" }} joueurs prêt à jouer</p>
+    </div>
+      <ion-button (click)="startGame()">Start 1ère question</ion-button>
   }
-  @else if(game_status === 'question_send') {
-    <h2>Question {{ question.questionIndex + 1 }} : {{ question.questionTitle }}</h2>
+  @else if(game_status === 'question_send' || game_status === 'show_answer') {
+    <h2>
+      Question {{ question.index + 1 }} :
+      {{ question.text }}
+    </h2>
+
     <ul>
-      @for(choice of question.questionsChoices; track choice.id) {
-        <li>{{ choice.text }}</li>
-      }
-    </ul>
-    <ion-button (click)="showResults()">Afficher résultats</ion-button>
-  }
-  @else if(game_status === 'show_answer') {
-    <h2>Résultats de la question {{ question.questionIndex + 1 }}</h2>
-    <ul>
-      @for(choice of question.questionsChoices; track choice.id) {
-        <li [ngClass]="{'correct': choice.id === correctAnswerId}">
-          {{ choice.text }} ({{ counts[choice.id] || 0 }} votes)
+      @for(choice of question.choices; track choice.id) {
+        <li
+          [ngClass]="{'correct': game_status === 'show_answer' && choice.id === correctAnswerId}"
+        >
+          {{ choice.text }}
+
+          @if(game_status === 'show_answer') {
+            <span class="count">
+              ({{ choice.responseCount || 0 }} votes)
+            </span>
+          }
         </li>
       }
     </ul>
-    <ion-button (click)="nextQuestion()">Question suivante</ion-button>
+
+    @if(game_status === 'question_send') {
+      <ion-button (click)="getAnswers()">Résultats</ion-button>
+    } @else if(game_status === 'show_answer') {
+      @if(isLastQuestion) {
+        <ion-button (click)="gameResults()">Résultat de la partie</ion-button>
+      }
+      @else {
+        <ion-button (click)="nextQuestion()">Question Suivante</ion-button>
+      }
+    }
+  }
+  @else if(game_status === 'show_score') {
+    @if(globalScores) {
+      <h2>Scores globaux</h2>
+      <ul>
+        @for(score of globalScores; track score.userId) {
+          <li>
+            {{ score.score }} points - {{ score.userName }}
+          </li>
+        }
+      </ul>
+    }
+    @else {
+      <h2>Chargement des scores...</h2>
+    }
+    <ion-button (click)="closeRoom()">Fermer la room</ion-button>
   }
   @else {
     <h2>Statut inconnu</h2>
   }
-
+  
 </ion-content>

@@ -1,12 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { Firestore, doc, collection, setDoc, updateDoc, getDoc, docData, collectionData } from '@angular/fire/firestore';
-import { Observable, map, tap } from 'rxjs';
+import { Firestore, doc, collection, setDoc, updateDoc, getDoc, getDocs, docData, collectionData } from '@angular/fire/firestore';
+import { Observable, firstValueFrom, map, tap } from 'rxjs';
 import { Quiz } from '../models/quiz';
 import { Room } from '../models/room';
-import { deleteDoc } from 'firebase/firestore';
-import { Question } from '../models/question';
 import { QuizService } from './quizService';
 import { GameQuestion } from '../models/gameQuestion';
+import { Player } from '../models/player';
+import { GameResult } from '../models/gameResult';
+import { writeBatch } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -26,19 +27,36 @@ export class GameService {
   }
   private async updateRoom(room: Partial<Room> & { roomId: string }): Promise<void> {
     const roomRef = doc(this.firestore, 'rooms', room.roomId);
-    await updateDoc(roomRef, room);
+    if(await getDoc(roomRef).then(snap => snap.exists())) {
+      await updateDoc(roomRef, room);
+    }
   }
   private async deleteRoom(roomId: string): Promise<void> {
-    const roomRef = doc(this.firestore, 'rooms', roomId);
-    await deleteDoc(roomRef);
+    const batch = writeBatch(this.firestore);
+
+    const playersColRef = collection(this.firestore, `/rooms/${roomId}/players`);
+    const playersSnap = await getDocs(playersColRef);
+
+    playersSnap.docs.forEach(playerDoc => batch.delete(playerDoc.ref));
+
+    const roomRef = doc(this.firestore, `rooms/${roomId}`);
+    batch.delete(roomRef);
+
+    await batch.commit();
+
+    console.log(`Room ${roomId} and all its players deleted in a batch.`);
   }
   private async getQuizWithQuestions(quizId: string): Promise<Quiz | undefined> {
-    return await this.quizService.getById(quizId).toPromise();
+    return firstValueFrom(this.quizService.getById(quizId));  
   }
 
   watchRoom(roomId: string): Observable<Room | null> {
     const roomRef = doc(this.firestore, 'rooms', roomId);
     return docData(roomRef) as Observable<Room | null>;
+  }
+  watchPlayers(roomId: string): Observable<Player[]> {
+    const playersRef = collection(this.firestore, `rooms/${roomId}/players`);
+    return collectionData(playersRef) as Observable<Player[]>;
   }
 
   /**
@@ -112,11 +130,27 @@ export class GameService {
     return { success: true};
   }
 
-  async nextQuestion(roomId: string): Promise<{ success: boolean; message?: string }> {
+  async nextQuestion(roomId: string) {
     const room = await this.getRoom(roomId);
     if (!room) return { success: false, message: 'Room not found' };
 
+    const quiz = await this.getQuizWithQuestions(room.quizId);
+    if (!quiz) return { success: false, message: 'Quiz not found' };
+
     const nextIndex = room.currentQuestionIndex + 1;
+    if (nextIndex >= quiz.questions.length) return { success: false, message: 'No more questions' };
+
+    // Reset latestAnswer for all players in the room
+    const playersColRef = collection(this.firestore, `/rooms/${roomId}/players`);
+    const playersSnap = await getDocs(playersColRef);
+
+    for (const playerDoc of playersSnap.docs) {
+      try {
+        await updateDoc(playerDoc.ref, { latestAnswer: null });
+      } catch (err) {
+        console.error(`Error resetting latestAnswer for player ${playerDoc.id}:`, err);
+      }
+    }
 
     await this.updateRoom({
       roomId,
@@ -124,7 +158,8 @@ export class GameService {
       status: 'question_send'
     });
 
-    return { success: true };
+    console.log(nextIndex, quiz.questions.length - 1);
+    return { success: true, isLastQuestion: nextIndex === quiz.questions.length - 1 };
   }
 
   public getNextQuestion(questionIndex: number, quizId: string): Promise<GameQuestion> {
@@ -173,6 +208,48 @@ export class GameService {
    * @returns 
    */
   async getAnswers(roomId: string) {
+    console.log(`Fetching answers for room ${roomId}...`);
+    const room = await this.getRoom(roomId);
+    if (!room) {
+      return { success: false, message: 'Room not found' };
+    }
+    console.log(`Room found: ${room.roomId}, quizId: ${room.quizId}, currentQuestionIndex: ${room.currentQuestionIndex}`);
+
+    const quiz = await this.getQuizWithQuestions(room.quizId);
+    console.log(`Quiz fetched: ${quiz ? quiz.id : 'not found'}`);
+    if (!quiz) {
+      return { success: false, message: 'Quiz not found' };
+    }
+    const currentQuestion = quiz.questions[room.currentQuestionIndex];
+
+    console.log(`Quiz found: ${quiz.id}, title: ${quiz.title}, questions count: ${quiz.questions.length}`);
+
+    const playersColRef = collection(this.firestore, `/rooms/${roomId}/players`);
+    const playersSnap = await getDocs(playersColRef);
+
+    // 4️⃣ Itérer sur les joueurs
+    for (const playerDoc of playersSnap.docs) {
+      try {
+        const playerData = playerDoc.data() as Player;
+        
+        if (playerData.latestAnswer === currentQuestion.correctChoiceId) {
+          const newScore = (playerData.score || 0) + 1;
+          await updateDoc(playerDoc.ref, { score: newScore });
+          console.log(`Player ${playerData.userId} answered correctly! New score: ${newScore}`);
+        }
+      } catch (err) {
+        console.error(`Error updating score for player ${playerDoc.id}:`, err);
+      }
+    }
+
+    await this.updateRoom({
+      roomId,
+      status: 'show_answer'
+    });
+
+    return { success: true };
+  }
+  async showResults(roomId: string) {
     const room = await this.getRoom(roomId);
     if (!room) {
       return { success: false, message: 'Room not found' };
@@ -183,29 +260,12 @@ export class GameService {
       return { success: false, message: 'Quiz not found' };
     }
 
-    const currentQuestionIndex = room.currentQuestionIndex;
-    const question = quiz.questions[currentQuestionIndex];
-
-    const answers = room.players.map(p => ({
-      username: p.username,
-      answer: p.answers[currentQuestionIndex] ?? null
-    }));
-
-    const counts: Record<string, number> = {};
-
-    question.choices.forEach(choice => { counts[choice.id] = 0; });
-    counts['0'] = 0;
-
-    answers.forEach(a => {
-      counts[a.answer??'0']++;
-    });
-
     await this.updateRoom({
       roomId,
-      status: 'show_answer'
+      status: 'show_score'
     });
 
-    return { success: true, answers };
+    return { success: true };
   }
 
   /**
@@ -218,23 +278,92 @@ export class GameService {
    * @param questionIndex 
    * @returns 
    */
-  async submitAnswer(roomId: string, playerName: string, answer: string, questionIndex: number): Promise<{ success: boolean; message?: string }> {
-    const room : Room | null = await this.getRoom(roomId);
+  async submitAnswer(roomId: string, playerId: string, answerId: string, questionIndex: number): Promise<{ success: boolean; message?: string }> {
+    const room: Room | null = await this.getRoom(roomId);
+    console.log("Room ? ", room ? "yes" : "no");
     if (!room) {
       return { success: false, message: 'Room not found' };
     }
-    const player = room.players.find(p => p.username === playerName);
-    if (!player) {
-      return { success: false, message: 'Player not found in room' };
-    }
-    if(room.status !== 'question_send') {
+    console.log(`Good Status ? ${room.status === 'question_send' ? "yes" : "no"}, Good Index ? ${room.currentQuestionIndex === questionIndex ? "yes" : "no"}`);
+    if (room.status !== 'question_send') {
       return { success: false, message: 'You can\'t submit an answer at this time' };
     }
-    if(room.currentQuestionIndex !== questionIndex) {
+    if (room.currentQuestionIndex !== questionIndex) {
       return { success: false, message: 'Invalid question index' };
     }
-    player.answers[questionIndex] = answer;
-    await this.updateRoom(room);
-    return { success: true };
+
+    try {
+      const playerRef = doc(this.firestore, `/rooms/${roomId}/players/${playerId}`);
+        await updateDoc(playerRef, {
+          latestAnswer: answerId,
+        });
+
+      console.log(`Answer submitted: ${answerId} by player ${playerId} for question ${questionIndex}`);
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating player answer:', err);
+      return { success: false, message: 'Failed to submit answer' };
+    }
+}
+  async getResponseCounts(roomId: string): Promise<GameQuestion | null> {
+    const room = await this.getRoom(roomId);
+    if (!room) return null;
+    
+    const quiz = await this.getQuizWithQuestions(room.quizId);
+    if (!quiz) return null;
+    
+    const question = quiz.questions[room.currentQuestionIndex];
+    if (!question) return null;
+    
+    // Préparer le GameQuestion
+    const gameQuestion: GameQuestion = {
+      index: room.currentQuestionIndex,
+      text: question.text,
+      choices: question.choices.map(c => ({
+        id: c.id,
+        text: c.text,
+        responseCount: 0
+      }))
+    };
+
+    // Récupérer tous les joueurs depuis la sous-collection
+    const playersColRef = collection(this.firestore, `/rooms/${roomId}/players`);
+    const playersSnap = await getDocs(playersColRef);
+    
+    // Compter les réponses
+    for (const playerDoc of playersSnap.docs) {
+      const player = playerDoc.data() as { latestAnswer?: string };
+      const choice = gameQuestion.choices.find(c => c.id === player.latestAnswer);
+      if (choice) {
+        choice.responseCount++;
+      }
+    }
+    
+    return gameQuestion;
+  }
+  async getGlobalScores(roomId: string) {
+    const room = await this.getRoom(roomId);
+    if (!room) return null;
+
+    const globalScores : GameResult[] = [];
+    
+    const playersColRef = collection(this.firestore, `/rooms/${roomId}/players`);
+    const playersSnap = await getDocs(playersColRef);
+
+    for (const playerDoc of playersSnap.docs) {
+      const player = playerDoc.data() as Player;
+      const userSnap = await getDoc(doc(this.firestore, `users/${player.userId}`));
+      const userName = userSnap.exists() ? (userSnap.data() as any).alias : 'Unknown';
+
+      console.log(`Player ${player.userId} (${userName}) has score ${player.score}`);
+
+      globalScores.push({
+        userId: player.userId,
+        userName: userName,
+        score: player.score || 0
+      });
+    }
+
+    return globalScores;
   }
 }

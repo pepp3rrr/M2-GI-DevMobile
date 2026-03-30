@@ -6,8 +6,4 @@ export interface Room {
     status: string; // affichage + event
     quizId: string;
     players: Player[];
-    currentEvent: {
-        eventTimestamp: number;
-        data: any;
-    };
 }

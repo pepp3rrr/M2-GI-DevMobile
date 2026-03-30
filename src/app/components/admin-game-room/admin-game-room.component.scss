@@ -1,0 +1,48 @@
+li {
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #eee;
+  transition: 0.2s;
+}
+
+li.selected {
+  background-color: #4da3ff; // bleu
+  color: white;
+}
+
+li.correct {
+  background-color: #4caf50; // vert
+  color: white;
+}
+
+li.wrong {
+  background-color: #f44336; // rouge
+  color: white;
+}
+
+.count {
+  float: right;
+  font-weight: bold;
+}
+
+.waiting-room {
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid #007bff;
+  border-radius: 6px;
+  max-width: 400px;
+  margin: 1rem auto;
+}
+
+.waiting-room h2 {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.waiting-room p {
+  font-size: 1rem;
+  color: #333;
+}

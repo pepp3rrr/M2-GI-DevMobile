@@ -26,3 +26,23 @@ li.wrong {
   float: right;
   font-weight: bold;
 }
+
+.waiting-room {
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid #007bff;
+  border-radius: 6px;
+  max-width: 400px;
+  margin: 1rem auto;
+}
+
+.waiting-room h2 {
+  font-size: 1.5rem;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.waiting-room p {
+  font-size: 1rem;
+  color: #333;
+}

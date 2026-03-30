@@ -5,8 +5,10 @@
   }
   @else {
     @if(game_status === 'waiting') {
-      <h2>En attente du lancement de la room {{ roomId }}</h2>
-      <p>actuelement {{(room$ | async)?.players?.length??"???"}} joueurs prêts</p>
+      <div class="waiting-room">
+        <h2>En attente du lancement de la room {{ roomId }}</h2>
+        <p>{{ (players$ | async)?.length || "0" }} joueurs prêts à jouer</p>
+      </div>
     }
     @else if(game_status === 'question_send' || game_status === 'show_answer') {
       <h2>
@@ -36,7 +38,20 @@
       </ul>
     }
     @else if(game_status === 'show_score') {
-      <h2>Affichage des scores...</h2>
+      @if(globalScores) {
+        <h2>Scores globaux</h2>
+        <ul>
+          @for(score of globalScores; track score.userId) {
+            <li>
+              {{ score.score }} points - {{ score.userName }}
+            </li>
+          }
+        </ul>
+      }
+      @else {
+        <h2>Chargement des scores...</h2>
+      }
+      <ion-button (click)="exitGame()">Quitter la partie</ion-button>
     }
     @else if(game_status === 'closed') {
       <h2>Statut inconnu</h2>

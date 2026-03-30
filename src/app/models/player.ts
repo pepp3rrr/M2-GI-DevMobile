@@ -1,4 +1,5 @@
 export interface Player {
-    username: string;
-    answers: string[];
+    userId: string;
+    latestAnswer: string;
+    score: number;
 }
