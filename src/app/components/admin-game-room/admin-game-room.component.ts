@@ -101,7 +101,10 @@ export class AdminGameRoomComponent implements OnInit {
   }
   
   async startGame() {
-    await this.gameService.startGame(this.roomId);
+    const result = await this.gameService.startGame(this.roomId);
+    if (result.success && result.isLastQuestion) {
+      this.isLastQuestion = true;
+    }
   }
   async nextQuestion() {
     const result = await this.gameService.nextQuestion(this.roomId);

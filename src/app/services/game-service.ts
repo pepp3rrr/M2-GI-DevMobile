@@ -120,6 +120,8 @@ export class GameService {
     if (!room) {
       return { success: false, message: 'Room not found' };
     }
+    const quiz = await this.getQuizWithQuestions(room.quizId);
+    if (!quiz) return { success: false, message: 'Quiz not found' };
 
     await this.updateRoom({
       roomId: room.roomId,
@@ -127,7 +129,7 @@ export class GameService {
       currentQuestionIndex: 0
     });
 
-    return { success: true};
+    return { success: true, isLastQuestion: quiz.questions.length === 1 };
   }
 
   async nextQuestion(roomId: string) {
