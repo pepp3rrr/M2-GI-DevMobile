@@ -47,21 +47,18 @@ export class GameService {
    * @param quiz 
    * @returns 
    */
-  async createRoom(quiz: Quiz) : Promise<string> {
-    const newRoom: Room = {
-      roomId: crypto.randomUUID(),
+  async createRoom(quizId: string, userId: string): Promise<string> {
+    const roomRef = doc(collection(this.firestore, 'rooms'));
+    const roomId = roomRef.id;
+
+    await setDoc(roomRef, {
+      roomId,
+      quizId,
       currentQuestionIndex: 0,
-      status: 'waiting',
-      quizId: quiz.id,
-      players: [],
-      currentEvent: {
-        eventTimestamp: Date.now(),
-        data: {}
-      }
-    };
-    const roomRef = doc(this.firestore, 'rooms', newRoom.roomId);
-    await setDoc(roomRef, newRoom);
-    return newRoom.roomId;
+      status: 'waiting'
+    });
+
+    return roomId;
   }
 
   async closeRoom(roomId: string): Promise<void> {
@@ -75,19 +72,22 @@ export class GameService {
    * @param playerName 
    * @returns 
    */
-  async joinRoom(roomId: string, playerName: string): Promise<{ success: boolean; message?: string }> {
-    const room : Room | null = await this.getRoom(roomId);
-    if (!room) {
-      return { success: false, message: 'Room not found' };
+
+  async joinRoom(roomId: string, userId: string) {
+    const playerRef = doc(this.firestore, `rooms/${roomId}/players/${userId}`);
+
+    const playerSnap = await getDoc(playerRef);
+
+    if (playerSnap.exists()) {
+      return { success: false, message: 'User already in room' };
     }
-    if (room.players.some(p => p.username === playerName)) {
-      return { success: false, message: 'Username already taken' };
-    }
-    room.players.push({ username: playerName, answers: [] });
-    await this.updateRoom({
-      roomId,
-      players: room.players
+
+    await setDoc(playerRef, { 
+      userId,
+      score: 0,
+      latestAnswer: null,
     });
+
     return { success: true };
   }
 

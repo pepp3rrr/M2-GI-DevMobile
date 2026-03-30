@@ -1,12 +1,27 @@
 import { Component, Input } from '@angular/core';
-import { ModalController, NavController } from '@ionic/angular';
 import { GameService } from 'src/app/services/game-service';
 import { Quiz } from 'src/app/models/quiz';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonButtons,
+  IonList,
+  IonItem,
+  IonLabel, 
+  ModalController,
+  NavController,
+} from '@ionic/angular/standalone';
+
+import { Auth, user } from '@angular/fire/auth';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
+  standalone: true,
   imports: [
     IonHeader,
     IonToolbar,
@@ -29,7 +44,8 @@ export class CreateRoomComponent {
   constructor(
     private modalCtrl: ModalController,
     private gameService: GameService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private auth: Auth,
   ) {}
 
   selectQuiz(quizId: string) {
@@ -43,15 +59,23 @@ export class CreateRoomComponent {
       this.error = 'Veuillez sélectionner un quiz';
       return;
     }
-    const quiz = this.quizzes.find(q => q.id === this.selectedQuizId);
 
-    if (!quiz) {
-      this.error = 'Quiz introuvable';
+    const currentUser = await firstValueFrom(user(this.auth));
+
+    if (!currentUser) {
+      this.error = 'Utilisateur non connecté';
       return;
     }
-    const roomId = await this.gameService.createRoom(quiz);
+
+    const userId = currentUser.uid;
+
+    const roomId = await this.gameService.createRoom(
+      this.selectedQuizId,
+      userId
+    );
 
     await this.modalCtrl.dismiss();
+
     this.navCtrl.navigateForward(`/admin-game-room/${roomId}`);
   }
 

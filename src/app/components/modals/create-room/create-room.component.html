@@ -1,32 +1,46 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Créer une room</ion-title>
+    <ion-title>Create a room</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Fermer</ion-button>
+      <ion-button (click)="close()">Close</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
 
+  <!-- Quiz list -->
   <ion-list>
     @for (quiz of quizzes; track quiz.id) {
       <ion-item
+        button
+        detail="false"
+        (click)="selectQuiz(quiz.id)"
         [color]="selectedQuizId === quiz.id ? 'primary' : ''"
-        (click)="selectQuiz(quiz.id)">
+      >
         <ion-label>
-          {{ quiz.title }} ({{ quiz.questions.length }} questions)
+          <h2>{{ quiz.title }}</h2>
+          <p>{{ quiz.questions.length }} questions</p>
         </ion-label>
       </ion-item>
     }
   </ion-list>
 
-  @if(error) {
-    <p style="color:red">{{ error }}</p>
+  <!-- Error message -->
+  @if (error) {
+    <p style="color:red; margin-top: 10px;">
+      {{ error }}
+    </p>
   }
 
-  <ion-button expand="block" (click)="createRoom()" [disabled]="!selectedQuizId">
-    Créer la room
+  <!-- Create button -->
+  <ion-button
+    expand="block"
+    (click)="createRoom()"
+    [disabled]="!selectedQuizId"
+    style="margin-top: 16px;"
+  >
+    Create room
   </ion-button>
 
-</ion-content>
+</ion-content>  
