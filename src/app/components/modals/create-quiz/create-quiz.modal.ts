@@ -63,14 +63,16 @@ export class CreateQuizModal {
 
 
   addQuestion() {
+    const choice1Id = crypto.randomUUID();
+    const choice2Id = crypto.randomUUID();
     const newQuestion: Question = {
       id: crypto.randomUUID(),
       text: '',
       choices: [
-        { id: crypto.randomUUID(), text: '' },
-        { id: crypto.randomUUID(), text: '' }
+        { id: choice1Id, text: '' },
+        { id: choice2Id, text: '' }
       ],
-      correctChoiceId: ''
+      correctChoiceId: choice1Id
     };
 
     this.quiz.update(q => ({

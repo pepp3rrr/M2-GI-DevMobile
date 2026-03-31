@@ -18,20 +18,43 @@
   </div>
 
   <!-- Quiz list -->
-  <div class="quiz-grid">
-    <ion-grid>
-      <ion-row>
-        @for(quiz of quizzes; track quiz.id) {
-          <ion-col size="6" size-md="4" size-lg="3">
-            <app-quiz-card 
-              [quiz]="quiz"
-              (quizClick)="openQuiz($event)">
-            </app-quiz-card>
-          </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
-  </div>
+  @if (!quizzes || quizzes.length === 0) {
+
+    <!-- Empty state -->
+    <div class="empty-state">
+      <h2>No quizzes?</h2>
+      <p>Create your own! 🚀</p>
+
+      <ion-button (click)="createQuiz()" class="empty-create-btn">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Create Quiz
+      </ion-button>
+    </div>
+
+  } @else {
+
+    <!-- Title when quizzes exist -->
+    <div class="section-title">
+      <h2>Your quizzes</h2>
+    </div>
+
+    <!-- Quiz grid -->
+    <div class="quiz-grid">
+      <ion-grid>
+        <ion-row>
+          @for(quiz of quizzes; track quiz.id) {
+            <ion-col size="6" size-md="4" size-lg="3">
+              <app-quiz-card 
+                [quiz]="quiz"
+                (quizClick)="openQuiz($event)">
+              </app-quiz-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+    </div>
+
+  }
 
   <!-- FAB (Create Quiz) -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
