@@ -103,44 +103,6 @@ export class HomePageComponent  implements OnInit {
     }
   }
 
-  // For debug
-  async addTestQuiz() {
-    const testQuiz: Quiz = {
-      id: '',
-      title: 'Math & General Knowledge',
-      description: 'A simple test quiz with two questions',
-      questions: [
-        {
-          id: '',
-          text: 'What is 2 + 2?',
-          choices: [
-            { id: 'a', text: '3' },
-            { id: 'b', text: '4' },
-            { id: 'c', text: '5' }
-          ],
-          correctChoiceId: 'b'
-        },
-        {
-          id: '',
-          text: 'What is the capital of France?',
-          choices: [
-            { id: 'a', text: 'Berlin' },
-            { id: 'b', text: 'Madrid' },
-            { id: 'c', text: 'Paris' }
-          ],
-          correctChoiceId: 'c'
-        }
-      ]
-    };
-
-    try {
-      const id = await this.quizService.addQuiz(testQuiz);
-      console.log('Test quiz created with ID:', id);
-    } catch (error) {
-      console.error('Error creating test quiz:', error);
-    }
-  }
-
   async openJoinRoomModal() {
     const modal = await this.modalCtrl.create({
       component: JoinRoomComponent
