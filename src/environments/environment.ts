@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
+  production: false,
   firebaseConfig: {
     apiKey: "AIzaSyD8c5yS-hz_qX2S8OKmuuBEoyp_QramyXM",
     authDomain: "m2pgi-kahoot-frolov.firebaseapp.com",
