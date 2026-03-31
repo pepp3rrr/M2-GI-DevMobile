@@ -22,9 +22,7 @@ export class AppComponent {
             const appPath = url.pathname;
 
             if (appPath) {
-              const segments = appPath.split("/").filter(Boolean);
-              const newPath = "/" + segments.slice(1).join("/");
-              this.router.navigateByUrl(newPath);
+              this.router.navigateByUrl(appPath);
             }
           }
         } catch (e) {
