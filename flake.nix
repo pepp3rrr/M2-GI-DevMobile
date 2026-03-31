@@ -1,0 +1,64 @@
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+  };
+  outputs = {
+    self,
+    nixpkgs,
+  }: let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs {
+      system = "x86_64-linux";
+      config.allowUnfree = true;
+      config.android_sdk.accept_license = true;
+    };
+
+    # Android
+    androidComposition = pkgs.androidenv.composeAndroidPackages {
+      platformVersions = [
+        "36"
+      ];
+      buildToolsVersions = [
+        "35.0.0"
+      ];
+      systemImageTypes = ["default"];
+      abiVersions = [
+        "armeabi-v7a"
+        "arm64-v8a"
+      ];
+      ndkVersion = "25.2.9519653";
+      includeNDK = true;
+      includeExtras = [
+        "extras;google;auto"
+      ];
+    };
+    androidsdk = androidComposition.androidsdk;
+    sdk_root = "${androidsdk}/libexec/android-sdk";
+    ndk_root = "${sdk_root}/ndk-bundle";
+    ndk_path = "${ndk_root}/toolchains/llvm/prebuilt/linux-x86_64/bin";
+    java = pkgs.jdk21_headless;
+  in {
+    devShells.${system}.default = pkgs.mkShell {
+      packages = with pkgs; [
+        nodejs
+        gradle
+        android-tools
+        sdkmanager
+        java
+      ];
+
+      JAVA_HOME = java;
+      JRE_HOME = java;
+
+      ANDROID_HOME = "${sdk_root}";
+      ANDROID_NDK_ROOT = "${ndk_root}";
+      NDK_HOME = "${ndk_root}";
+
+      shellHook = ''
+        export PATH="${ndk_path}:${androidsdk}/bin:$PATH";
+
+        [[ -f .env ]] && . .env
+      '';
+    };
+  };
+}
