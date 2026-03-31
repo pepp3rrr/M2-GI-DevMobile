@@ -21,6 +21,29 @@
   align-items: center;
 }
 
+/*  header actions (edit + delete) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-actions ion-button {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  height: 36px;
+}
+
+.header-actions ion-icon {
+  font-size: 1.4rem;
+}
+
+/* Optional: nicer hover/press feel */
+.header-actions ion-button:active {
+  transform: scale(0.92);
+}
+
+/* Logo */
 .logo {
   font-size: 3rem;
   margin-bottom: 10px;
@@ -89,7 +112,7 @@ ion-button {
   --background: #6c5ce7;
 }
 
-/* Readonly feel (subtle but nice) */
+/* Readonly feel */
 ion-input[readonly] {
   opacity: 0.9;
 }
@@ -103,6 +126,7 @@ ion-input[readonly]::part(native) {
   margin-top: 10px;
 }
 
+/* Error */
 .error-text {
   color: #e74c3c;
   font-size: 0.8rem;

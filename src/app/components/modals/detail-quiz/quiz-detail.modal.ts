@@ -2,6 +2,7 @@ import { Component, Input, inject, signal } from '@angular/core';
 import { Quiz } from 'src/app/models/quiz';
 import { ModalController } from '@ionic/angular/standalone';
 import { QuizService } from 'src/app/services/quiz-service';
+import { AlertController } from '@ionic/angular/standalone';
 import { Question } from 'src/app/models/question';
 import { addIcons } from 'ionicons';
 import {
@@ -64,6 +65,7 @@ export class QuizDetailModal {
 
   private modalCtrl = inject(ModalController);
   private quizService = inject(QuizService);
+  private alertCtrl = inject(AlertController);
 
   isEditing = signal(false);
   editableQuiz = signal<Quiz | null>(null);
@@ -154,7 +156,9 @@ export class QuizDetailModal {
   addQuestion() {
     this.editableQuiz.update(q => {
       if (!q) return q;
-
+      
+      const choice1Id = crypto.randomUUID();
+      const choice2Id = crypto.randomUUID();
       return {
         ...q,
         questions: [
@@ -163,10 +167,10 @@ export class QuizDetailModal {
             id: crypto.randomUUID(),
             text: '',
             choices: [
-              { id: crypto.randomUUID(), text: '' },
-              { id: crypto.randomUUID(), text: '' }
+              { id: choice1Id, text: '' },
+              { id: choice2Id, text: '' }
             ],
-            correctChoiceId: ''
+            correctChoiceId: choice1Id
           }
         ]
       };
@@ -273,5 +277,33 @@ export class QuizDetailModal {
 
   onAddChoice(questionId: string) {
     this.addChoice(questionId);
+  }
+
+    async confirmDelete() {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Quiz',
+      message: 'Are you sure you want to delete this quiz? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: () => this.deleteQuiz()
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+    async deleteQuiz() {
+    if (!this.quiz?.id) return;
+
+    //await this.quizService.deleteQuiz(this.quiz.id);
+
+    this.modalCtrl.dismiss();
   }
 }

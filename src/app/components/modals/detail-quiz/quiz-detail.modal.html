@@ -3,18 +3,26 @@
   <div class="quiz-container">
 
     <!-- Header -->
-    <div class="quiz-header">
-      <div class="header-row">
-        <h1 class="app-name">
-          {{ isEditing() ? 'Edit Quiz' : 'Quiz Details' }}
-        </h1>
+    <div class="header-row">
+      <h1 class="app-name">
+        {{ isEditing() ? 'Edit Quiz' : 'Quiz Details' }}
+      </h1>
 
-        @if (!isEditing()) {
+      @if (!isEditing()) {
+        <div class="header-actions">
+
+          <!-- Edit -->
           <ion-button fill="clear" color="light" (click)="enableEdit()">
             <ion-icon name="create-outline"></ion-icon>
           </ion-button>
-        }
-      </div>
+
+          <!-- Delete -->
+          <ion-button fill="clear" color="danger" (click)="confirmDelete()">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+
+        </div>
+      }
     </div>
 
     <!-- Title -->
