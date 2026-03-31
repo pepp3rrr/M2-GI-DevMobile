@@ -302,7 +302,7 @@ export class QuizDetailModal {
     async deleteQuiz() {
     if (!this.quiz?.id) return;
 
-    //await this.quizService.deleteQuiz(this.quiz.id);
+    await this.quizService.deleteQuiz(this.quiz.id);
 
     this.modalCtrl.dismiss();
   }

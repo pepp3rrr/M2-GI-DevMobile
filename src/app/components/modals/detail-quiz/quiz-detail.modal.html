@@ -81,12 +81,13 @@
 
             <ion-radio-group
               [value]="question.correctChoiceId"
+              [name]="'question-' + question.id"
               (ionChange)="isEditing() && setCorrectChoice(question.id, $event.detail.value)"
             >
-
-              @for (choice of question.choices; track choice.id) {
+              @for (choice of question.choices; track $index) {
 
                 <ion-item class="choice-item">
+
                   <ion-input
                     placeholder="Answer"
                     [value]="choice.text"
@@ -94,6 +95,7 @@
                     (ionInput)="isEditing() && setChoiceText(question.id, choice.id, $event.detail.value ?? '')"
                   ></ion-input>
 
+                  <!-- VIEW MODE -->
                   @if (!isEditing()) {
                     <ion-icon
                       [name]="question.correctChoiceId === choice.id ? 'checkmark-circle' : 'ellipse-outline'"
@@ -102,8 +104,13 @@
                     ></ion-icon>
                   }
 
+                  <!-- EDIT MODE -->
                   @if (isEditing()) {
-                    <ion-radio slot="end" [value]="choice.id"></ion-radio>
+
+                    <ion-radio
+                      slot="end"
+                      [value]="choice.id"
+                    ></ion-radio>
 
                     <ion-button
                       fill="clear"
@@ -113,26 +120,28 @@
                     >
                       <ion-icon name="close-outline"></ion-icon>
                     </ion-button>
+
                   }
 
                 </ion-item>
+
               }
 
             </ion-radio-group>
 
             @if (isEditing()) {
-              <ion-button
-                expand="block"
-                fill="outline"
-                class="add-choice-btn"
-                (click)="addChoice(question.id)"
-                [disabled]="question.choices.length >= 4"
-              >
-                <ion-icon name="add-outline" slot="start"></ion-icon>
-                Add answer
-              </ion-button>
-
-              @if (isEditing() && !isQuestionValid(question)) {
+              @if (question.choices.length < 4) {
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  class="add-choice-btn"
+                  (click)="onAddChoice(question.id)"
+                >
+                  <ion-icon name="add-outline" slot="start"></ion-icon>
+                  Add answer
+                </ion-button>
+              }
+              @if (!isQuestionValid(question)) {
                 <p class="error-text">
                   Complete the question properly
                 </p>
