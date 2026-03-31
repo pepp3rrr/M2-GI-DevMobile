@@ -19,7 +19,7 @@ export class AppComponent {
         try {
           const url = new URL(event.url);
           if (url.hostname.toLowerCase() === 'pepp3rrr.github.io') {
-            const appPath = url.pathname;
+            const appPath = "/" + url.pathname.split("/").slice(1).join("/");
             if (appPath) {
               this.router.navigateByUrl(appPath);
             }
